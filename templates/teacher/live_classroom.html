@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Live — {{ course.title }}{% endblock %}
+{% block page_title %}Live Classroom{% endblock %}
+
+{% block content %}
+<div class="live-classroom-layout">
+
+  <!-- Main Stream Panel -->
+  <div class="live-main-panel">
+    <div class="live-header">
+      <div class="live-indicator">
+        <span class="live-dot"></span> LIVE
+      </div>
+      <h5 class="text-white mb-0">{{ course.title }}</h5>
+      <div class="live-header-right">
+        <span class="live-viewers"><i class="bi bi-people-fill me-1"></i>{{ students|length }} enrolled</span>
+      </div>
+    </div>
+
+    <!-- Mock WebRTC stream window -->
+    <div class="live-stream-window">
+      <div class="stream-placeholder">
+        <div class="stream-camera-ring">
+          <div class="stream-camera-pulse"></div>
+          <i class="bi bi-camera-video-fill stream-camera-icon"></i>
+        </div>
+        <p class="text-white mt-3 mb-1 fw-semibold">Camera Preview</p>
+        <p class="text-white-50 small">WebRTC stream will initialize here</p>
+        <div class="stream-mock-bars">
+          <div class="mock-bar" id="bar1"></div>
+          <div class="mock-bar" id="bar2"></div>
+          <div class="mock-bar" id="bar3"></div>
+          <div class="mock-bar" id="bar4"></div>
+          <div class="mock-bar" id="bar5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Camera Grid -->
+    <div class="student-camera-grid">
+      {% for student in students|slice:":6" %}
+      <div class="student-cam-card">
+        <div class="student-cam-avatar">{{ student.first_name|first|upper }}{{ student.last_name|first|upper }}</div>
+        <div class="student-cam-name">{{ student.first_name }}</div>
+        <div class="student-cam-mic"><i class="bi bi-mic-fill text-success"></i></div>
+      </div>
+      {% endfor %}
+      {% if students|length > 6 %}
+      <div class="student-cam-card student-cam-more">
+        <span>+{{ students|length|add:"-6" }}</span>
+        <div class="student-cam-name">more</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Controls bar -->
+    <div class="live-controls">
+      <button class="live-ctrl-btn live-ctrl-active" id="toggleMic" title="Toggle Mic">
+        <i class="bi bi-mic-fill"></i>
+      </button>
+      <button class="live-ctrl-btn live-ctrl-active" id="toggleCam" title="Toggle Camera">
+        <i class="bi bi-camera-video-fill"></i>
+      </button>
+      <button class="live-ctrl-btn" title="Share Screen">
+        <i class="bi bi-display"></i>
+      </button>
+      <button class="live-ctrl-btn" title="Raise Hand">
+        <i class="bi bi-hand-thumbs-up"></i>
+      </button>
+      <button class="live-ctrl-btn live-ctrl-danger" title="End Session">
+        <i class="bi bi-telephone-x-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat & Students Sidebar -->
+  <div class="live-sidebar">
+    <!-- Tabs -->
+    <div class="live-sidebar-tabs">
+      <button class="live-tab-btn active" data-live-tab="chat">Chat</button>
+      <button class="live-tab-btn" data-live-tab="participants">Participants</button>
+    </div>
+
+    <!-- Chat -->
+    <div class="live-tab-pane active" id="live-tab-chat">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg system">Class has started. Welcome everyone!</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+        <button class="chat-send-btn" id="chatSend"><i class="bi bi-send-fill"></i></button>
+      </div>
+    </div>
+
+    <!-- Participants -->
+    <div class="live-tab-pane" id="live-tab-participants">
+      <div class="participants-list">
+        <div class="participant-item host">
+          <div class="mini-avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+          <div>
+            <div class="fw-semibold small">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="text-muted x-small">Host (Teacher)</div>
+          </div>
+          <i class="bi bi-mic-fill text-success ms-auto"></i>
+        </div>
+        {% for student in students %}
+        <div class="participant-item">
+          <div class="mini-avatar">{{ student.first_name|first|upper }}{{ student.last_name|first|upper }}</div>
+          <div>
+            <div class="fw-semibold small">{{ student.get_full_name|default:student.username }}</div>
+            <div class="text-muted x-small">Student</div>
+          </div>
+          <i class="bi bi-mic-mute-fill text-muted ms-auto"></i>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  // Animated audio bars
+  const bars = document.querySelectorAll('.mock-bar');
+  function animateBars() {
+    bars.forEach(bar => {
+      const h = Math.random() * 24 + 4;
+      bar.style.height = h + 'px';
+    });
+  }
+  setInterval(animateBars, 200);
+
+  // Mic / Cam toggles
+  const micBtn = document.getElementById('toggleMic');
+  const camBtn = document.getElementById('toggleCam');
+  if (micBtn) {
+    micBtn.addEventListener('click', function() {
+      this.classList.toggle('live-ctrl-active');
+      this.classList.toggle('live-ctrl-muted');
+      const icon = this.querySelector('i');
+      icon.className = icon.className.includes('mute') ? 'bi bi-mic-fill' : 'bi bi-mic-mute-fill';
+    });
+  }
+  if (camBtn) {
+    camBtn.addEventListener('click', function() {
+      this.classList.toggle('live-ctrl-active');
+      this.classList.toggle('live-ctrl-muted');
+      const icon = this.querySelector('i');
+      icon.className = icon.className.includes('slash') ? 'bi bi-camera-video-fill' : 'bi bi-camera-video-off-fill';
+    });
+  }
+
+  // Live sidebar tabs
+  document.querySelectorAll('.live-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.live-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.live-tab-pane').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('live-tab-' + this.dataset.liveTab).classList.add('active');
+    });
+  });
+
+  // Mock chat
+  const chatInput = document.getElementById('chatInput');
+  const chatSend = document.getElementById('chatSend');
+  const chatMessages = document.getElementById('chatMessages');
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    const div = document.createElement('div');
+    div.className = 'chat-msg mine';
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatInput.value = '';
+  }
+  if (chatSend) chatSend.addEventListener('click', sendMessage);
+  if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+})();
+</script>
+{% endblock %}

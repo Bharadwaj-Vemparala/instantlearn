@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}My Grades — Instant Learn{% endblock %}
+{% block page_title %}Academic Performance{% endblock %}
+
+{% block content %}
+<!-- Course Performance Cards -->
+{% if course_stats %}
+<div class="row g-3 mb-4">
+  {% for stat in course_stats %}
+  <div class="col-md-6 col-lg-4">
+    <div class="section-card performance-card">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <h6 class="fw-bold mb-0">{{ stat.course.title }}</h6>
+          <span class="text-muted small">{{ stat.graded }}/{{ stat.total }} graded</span>
+        </div>
+        <div class="perf-ring-wrap">
+          <svg class="perf-ring" viewBox="0 0 36 36">
+            <path class="perf-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="perf-ring-fill {% if stat.percentage >= 60 %}fill-good{% elif stat.percentage >= 40 %}fill-ok{% else %}fill-low{% endif %}"
+                  stroke-dasharray="{{ stat.percentage }}, 100"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="perf-ring-label">{{ stat.percentage }}%</div>
+        </div>
+      </div>
+      <div class="perf-stats">
+        <div class="perf-stat">
+          <div class="perf-stat-val text-success">{{ stat.earned }}</div>
+          <div class="perf-stat-label">Earned</div>
+        </div>
+        <div class="perf-stat">
+          <div class="perf-stat-val text-muted">{{ stat.max }}</div>
+          <div class="perf-stat-label">Total</div>
+        </div>
+        <div class="perf-stat">
+          <div class="perf-stat-val {% if stat.percentage >= 60 %}text-success{% elif stat.percentage >= 40 %}text-warning{% else %}text-danger{% endif %}">
+            {% if stat.percentage >= 80 %}A{% elif stat.percentage >= 60 %}B{% elif stat.percentage >= 40 %}C{% else %}D{% endif %}
+          </div>
+          <div class="perf-stat-label">Grade</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- All Submissions Table -->
+<div class="section-card">
+  <h5 class="section-title mb-4"><i class="bi bi-list-check me-2"></i>All Submissions</h5>
+  {% if submissions %}
+  <div class="table-card">
+    <table class="il-table">
+      <thead>
+        <tr>
+          <th>Assignment</th>
+          <th>Course</th>
+          <th>Submitted</th>
+          <th>Marks</th>
+          <th>Status</th>
+          <th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in submissions %}
+        <tr>
+          <td class="fw-semibold">{{ sub.assignment.title }}</td>
+          <td>
+            <a href="{% url 'student_course_detail' sub.assignment.course.pk %}" class="text-decoration-none">
+              {{ sub.assignment.course.title }}
+            </a>
+          </td>
+          <td class="text-muted small">{{ sub.submitted_at|date:"M d, Y" }}</td>
+          <td>
+            {% if sub.graded_marks is not None %}
+            <span class="grade-badge {% if sub.grade_percentage >= 60 %}grade-good{% elif sub.grade_percentage >= 40 %}grade-ok{% else %}grade-low{% endif %}">
+              {{ sub.graded_marks }}/{{ sub.assignment.max_marks }}
+            </span>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if sub.status == 'graded' %}
+            <span class="badge bg-success-subtle text-success">Graded</span>
+            {% else %}
+            <span class="badge bg-warning-subtle text-warning">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if sub.feedback %}
+            <span class="text-muted small" title="{{ sub.feedback }}">
+              {{ sub.feedback|truncatechars:40 }}
+            </span>
+            {% else %}
+            <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-file-earmark-text"></i>
+    <h6>No submissions yet</h6>
+    <p>Submit your first assignment to see grades here</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

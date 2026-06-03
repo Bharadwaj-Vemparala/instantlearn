@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — Instant Learn{% endblock %}
+
+{% block auth_content %}
+<div class="auth-split">
+  <!-- Left panel -->
+  <div class="auth-hero">
+    <div class="hero-content">
+      <div class="hero-brand">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>InstantLearn</span>
+      </div>
+      <h1 class="hero-headline">Start teaching<br>or learning today</h1>
+      <p class="hero-sub">Join thousands of educators and students on Instant Learn.</p>
+      <div class="hero-features">
+        <div class="hero-feat"><i class="bi bi-person-check-fill"></i> Free to Sign Up</div>
+        <div class="hero-feat"><i class="bi bi-shield-lock-fill"></i> Secure & Private</div>
+        <div class="hero-feat"><i class="bi bi-stars"></i> Premium Experience</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="auth-form-panel">
+    <div class="auth-card auth-card-wide">
+      <div class="auth-mobile-brand">
+        <div class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+        <span>Instant<strong>Learn</strong></span>
+      </div>
+      <h2 class="auth-title">Create your account</h2>
+      <p class="auth-subtitle">Get started in under a minute</p>
+
+      <form method="post" class="mt-4">
+        {% csrf_token %}
+
+        <!-- Role selector -->
+        <div class="role-selector mb-4">
+          <label class="form-label fw-medium">I am a...</label>
+          <div class="role-options">
+            {% for radio in form.role %}
+            <label class="role-option {% if radio.data.value == 'teacher' %}role-teacher{% else %}role-student{% endif %}">
+              {{ radio.tag }}
+              <div class="role-option-inner">
+                <i class="bi bi-{% if radio.data.value == 'teacher' %}mortarboard-fill{% else %}person-fill{% endif %}"></i>
+                <span>{{ radio.choice_label }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label fw-medium">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="form-text text-danger">{{ form.first_name.errors|first }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-medium">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<div class="form-text text-danger">{{ form.last_name.errors|first }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-medium">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="form-text text-danger">{{ form.email.errors|first }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-medium">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="form-text text-danger">{{ form.username.errors|first }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-medium">Password</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}<div class="form-text text-danger">{{ form.password1.errors|first }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-medium">Confirm</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}<div class="form-text text-danger">{{ form.password2.errors|first }}</div>{% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-custom w-100 mt-4">
+          <i class="bi bi-person-plus-fill me-2"></i>Create Account
+        </button>
+      </form>
+
+      <p class="auth-switch mt-3 text-center">
+        Already have an account? <a href="{% url 'login' %}">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

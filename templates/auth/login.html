@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — Instant Learn{% endblock %}
+
+{% block auth_content %}
+<div class="auth-split">
+  <!-- Left panel -->
+  <div class="auth-hero">
+    <div class="hero-content">
+      <div class="hero-brand">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>InstantLearn</span>
+      </div>
+      <h1 class="hero-headline">Your premium<br>learning space</h1>
+      <p class="hero-sub">Connect teachers and students in one elegant, powerful platform.</p>
+      <div class="hero-features">
+        <div class="hero-feat"><i class="bi bi-camera-video-fill"></i> Live Virtual Classrooms</div>
+        <div class="hero-feat"><i class="bi bi-graph-up-arrow"></i> Real-time Grade Tracking</div>
+        <div class="hero-feat"><i class="bi bi-calendar-check-fill"></i> Smart Attendance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <div class="auth-mobile-brand">
+        <div class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+        <span>Instant<strong>Learn</strong></span>
+      </div>
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to continue your learning journey</p>
+
+      <form method="post" class="mt-4">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            {{ form.non_field_errors|first }}
+          </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label fw-medium">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="form-text text-danger">{{ form.username.errors|first }}</div>
+          {% endif %}
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-medium">Password</label>
+          {{ form.password }}
+        </div>
+        <button type="submit" class="btn btn-primary-custom w-100">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+        </button>
+      </form>
+
+      <p class="auth-switch mt-4 text-center">
+        Don't have an account? <a href="{% url 'register' %}">Create one for free</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

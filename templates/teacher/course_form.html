@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Course — Instant Learn{% endblock %}
+{% block page_title %}{{ action }} Course{% endblock %}
+
+{% block content %}
+<div class="form-page-layout">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-card-icon"><i class="bi bi-collection-fill"></i></div>
+      <div>
+        <h4 class="mb-0">{{ action }} Course</h4>
+        <p class="text-muted small mb-0">Fill in the details below to {{ action|lower }} your course.</p>
+      </div>
+    </div>
+
+    <form method="post" class="mt-4">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Course Title <span class="text-danger">*</span></label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="form-text text-danger">{{ form.title.errors|first }}</div>{% endif %}
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Description</label>
+        {{ form.description }}
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Cover Color</label>
+        <div class="color-picker-row">
+          {% for radio in form.cover_color %}
+          <label class="color-swatch-label">
+            {{ radio.tag }}
+            <span class="color-swatch" style="background:{{ radio.data.value }};"></span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary-custom">
+          <i class="bi bi-check-lg me-2"></i>{{ action }} Course
+        </button>
+        <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

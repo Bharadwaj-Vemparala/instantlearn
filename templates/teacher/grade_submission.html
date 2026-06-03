@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Grade Submission — Instant Learn{% endblock %}
+{% block page_title %}Grading Suite{% endblock %}
+
+{% block content %}
+<div class="grading-layout">
+
+  <!-- Left: Submission viewer -->
+  <div class="grading-viewer section-card">
+    <div class="grading-student-info">
+      <div class="grading-avatar">
+        {{ submission.student.first_name|first|upper }}{{ submission.student.last_name|first|upper }}
+      </div>
+      <div>
+        <h5 class="mb-0">{{ submission.student.get_full_name|default:submission.student.username }}</h5>
+        <p class="text-muted small mb-0">{{ submission.student.email }}</p>
+        <p class="text-muted small">Submitted: {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="mb-3">
+      <h6 class="text-muted text-uppercase small fw-semibold">Assignment</h6>
+      <p class="fw-semibold mb-1">{{ submission.assignment.title }}</p>
+      <p class="text-muted small">{{ submission.assignment.instructions }}</p>
+      <p class="text-muted small"><i class="bi bi-clock me-1"></i>Deadline: {{ submission.assignment.deadline|date:"M d, Y H:i" }}</p>
+    </div>
+
+    <hr>
+
+    <div>
+      <h6 class="text-muted text-uppercase small fw-semibold">Student's Submission</h6>
+      {% if submission.file_upload %}
+      <div class="submission-file-block">
+        <i class="bi bi-paperclip me-2 text-primary"></i>
+        <a href="{{ submission.file_upload.url }}" target="_blank" class="text-decoration-none fw-medium">
+          View Uploaded File
+        </a>
+        <a href="{{ submission.file_upload.url }}" download class="btn btn-xs btn-outline-primary ms-2">
+          <i class="bi bi-download"></i>
+        </a>
+      </div>
+      {% endif %}
+      {% if submission.text_content %}
+      <div class="submission-text-block mt-3">
+        {{ submission.text_content|linebreaks }}
+      </div>
+      {% endif %}
+      {% if not submission.file_upload and not submission.text_content %}
+      <p class="text-muted">No content submitted.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right: Grading form -->
+  <div class="grading-form-panel">
+    <div class="section-card">
+      <div class="section-header">
+        <h5 class="section-title"><i class="bi bi-check2-square me-2"></i>Grade & Feedback</h5>
+        {% if submission.status == 'graded' %}
+        <span class="badge bg-success-subtle text-success rounded-pill">Already Graded</span>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Marks Awarded</label>
+          <div class="marks-input-group">
+            {{ form.graded_marks }}
+            <span class="marks-max">/ {{ submission.assignment.max_marks }}</span>
+          </div>
+          {% if form.graded_marks.errors %}
+          <div class="form-text text-danger">{{ form.graded_marks.errors|first }}</div>
+          {% endif %}
+          <div class="marks-bar mt-2">
+            <div class="marks-bar-fill" id="marksBar"></div>
+          </div>
+          <div class="marks-pct text-muted small" id="marksPct">Enter marks to see percentage</div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Feedback to Student</label>
+          {{ form.feedback }}
+          {% if form.feedback.errors %}<div class="form-text text-danger">{{ form.feedback.errors|first }}</div>{% endif %}
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary-custom flex-grow-1">
+            <i class="bi bi-check-circle-fill me-2"></i>Submit Grade
+          </button>
+          <a href="{% url 'assignment_submissions' submission.assignment.pk %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Previous feedback if re-grading -->
+    {% if submission.feedback %}
+    <div class="section-card mt-3">
+      <h6 class="text-muted small fw-semibold text-uppercase mb-2">Previous Feedback</h6>
+      <p class="text-muted small mb-0">{{ submission.feedback }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const marksInput = document.querySelector('[name="graded_marks"]');
+  const maxMarks = {{ submission.assignment.max_marks }};
+  const bar = document.getElementById('marksBar');
+  const pct = document.getElementById('marksPct');
+
+  function updateBar() {
+    const val = parseInt(marksInput.value) || 0;
+    const p = Math.min(100, Math.round((val / maxMarks) * 100));
+    bar.style.width = p + '%';
+    bar.style.background = p >= 60 ? 'var(--color-emerald)' : p >= 40 ? 'var(--color-amber)' : 'var(--color-red)';
+    pct.textContent = marksInput.value ? `${p}% (${val}/${maxMarks})` : 'Enter marks to see percentage';
+  }
+
+  if (marksInput) {
+    marksInput.addEventListener('input', updateBar);
+    updateBar();
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Submit — {{ assignment.title }}{% endblock %}
+{% block page_title %}Submit Assignment{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Assignment Details -->
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6 class="text-muted text-uppercase small fw-semibold mb-3">Assignment Details</h6>
+      <h5 class="fw-bold mb-2">{{ assignment.title }}</h5>
+      <p class="text-muted small mb-3">{{ assignment.instructions }}</p>
+      <div class="d-flex flex-column gap-2">
+        <div class="info-row">
+          <i class="bi bi-collection text-primary me-2"></i>
+          <span class="small">{{ course.title }}</span>
+        </div>
+        <div class="info-row">
+          <i class="bi bi-clock text-warning me-2"></i>
+          <span class="small">Due: <strong>{{ assignment.deadline|date:"M d, Y H:i" }}</strong></span>
+        </div>
+        <div class="info-row">
+          <i class="bi bi-star text-amber me-2"></i>
+          <span class="small">Max Marks: <strong>{{ assignment.max_marks }}</strong></span>
+        </div>
+        {% if assignment.attachment %}
+        <div class="info-row">
+          <i class="bi bi-paperclip text-info me-2"></i>
+          <a href="{{ assignment.attachment.url }}" class="small" download>Download Attachment</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Submission Form -->
+  <div class="col-lg-8">
+    <div class="section-card">
+      <h5 class="section-title mb-4"><i class="bi bi-upload me-2"></i>Your Submission</h5>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 mb-3">{{ form.non_field_errors|first }}</div>
+        {% endif %}
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Written Answer</label>
+          {{ form.text_content }}
+          <div class="form-text">Optional — write your answer directly here</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">File Upload</label>
+          {{ form.file_upload }}
+          <div class="form-text">Upload a PDF, document, image, or any relevant file</div>
+          {% if form.file_upload.errors %}
+          <div class="form-text text-danger">{{ form.file_upload.errors|first }}</div>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary-custom btn-lg">
+            <i class="bi bi-send-fill me-2"></i>Submit Assignment
+          </button>
+          <a href="{% url 'student_course_detail' course.pk %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

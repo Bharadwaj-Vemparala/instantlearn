@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Register — Instant Learn{% endblock %}
+{% block page_title %}Attendance Register{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="section-card mb-4">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label fw-semibold">Select Course</label>
+      {{ date_form.course }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Date</label>
+      {{ date_form.date }}
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary-custom w-100">
+        <i class="bi bi-search me-2"></i>Load Register
+      </button>
+    </div>
+  </form>
+</div>
+
+{% if attendance_data is not None %}
+<!-- Attendance Form -->
+<div class="section-card">
+  <div class="section-header mb-4">
+    <div>
+      <h5 class="section-title mb-0">{{ course.title }}</h5>
+      <p class="text-muted small mb-0">
+        <i class="bi bi-calendar3 me-1"></i>
+        {{ date|date:"l, F d, Y" }}
+      </p>
+    </div>
+    <div class="attendance-quick-btns">
+      <button type="button" class="btn btn-sm btn-success-subtle" id="markAllPresent">
+        <i class="bi bi-check-all me-1"></i>All Present
+      </button>
+      <button type="button" class="btn btn-sm btn-danger-subtle" id="markAllAbsent">
+        <i class="bi bi-x-circle me-1"></i>All Absent
+      </button>
+    </div>
+  </div>
+
+  {% if attendance_data %}
+  <form method="post" id="attendanceForm">
+    {% csrf_token %}
+    <input type="hidden" name="course_id" value="{{ course.pk }}">
+    <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+
+    <div class="attendance-grid">
+      {% for item in attendance_data %}
+      <div class="attendance-card" id="att-card-{{ item.student.pk }}">
+        <div class="att-student-info">
+          <div class="mini-avatar">{{ item.student.first_name|first|upper }}{{ item.student.last_name|first|upper }}</div>
+          <div>
+            <div class="fw-semibold small">{{ item.student.get_full_name|default:item.student.username }}</div>
+            <div class="text-muted x-small">{{ item.student.email }}</div>
+          </div>
+        </div>
+        <div class="att-toggle-group">
+          <label class="att-radio {% if item.status == 'present' %}selected-present{% endif %}" for="present_{{ item.student.pk }}">
+            <input type="radio" name="status_{{ item.student.pk }}" id="present_{{ item.student.pk }}"
+                   value="present" {% if item.status == 'present' %}checked{% endif %}
+                   class="att-radio-input" data-card="att-card-{{ item.student.pk }}">
+            <i class="bi bi-check-circle-fill me-1"></i>P
+          </label>
+          <label class="att-radio {% if item.status == 'absent' %}selected-absent{% endif %}" for="absent_{{ item.student.pk }}">
+            <input type="radio" name="status_{{ item.student.pk }}" id="absent_{{ item.student.pk }}"
+                   value="absent" {% if item.status == 'absent' %}checked{% endif %}
+                   class="att-radio-input" data-card="att-card-{{ item.student.pk }}">
+            <i class="bi bi-x-circle-fill me-1"></i>A
+          </label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between align-items-center">
+      <div class="att-summary" id="attSummary">
+        <span class="text-success fw-semibold" id="presentCount">0</span> present &bull;
+        <span class="text-danger fw-semibold" id="absentCount">0</span> absent
+      </div>
+      <button type="submit" class="btn btn-primary-custom btn-lg">
+        <i class="bi bi-save-fill me-2"></i>Save Attendance
+      </button>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-people"></i>
+    <h6>No students enrolled</h6>
+    <p>Add students to this course first</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  function updateSummary() {
+    const cards = document.querySelectorAll('.attendance-card');
+    let present = 0, absent = 0;
+    cards.forEach(card => {
+      const checked = card.querySelector('input[type=radio]:checked');
+      if (checked) {
+        if (checked.value === 'present') present++;
+        else absent++;
+      }
+    });
+    const pc = document.getElementById('presentCount');
+    const ac = document.getElementById('absentCount');
+    if (pc) pc.textContent = present;
+    if (ac) ac.textContent = absent;
+  }
+
+  // Radio change → update card style
+  document.querySelectorAll('.att-radio-input').forEach(input => {
+    input.addEventListener('change', function() {
+      const cardId = this.dataset.card;
+      const card = document.getElementById(cardId);
+      const labels = card.querySelectorAll('.att-radio');
+      labels.forEach(l => {
+        l.classList.remove('selected-present', 'selected-absent');
+      });
+      const parentLabel = this.closest('.att-radio');
+      if (this.value === 'present') parentLabel.classList.add('selected-present');
+      else parentLabel.classList.add('selected-absent');
+      updateSummary();
+    });
+  });
+
+  // Bulk buttons
+  const markAllPresent = document.getElementById('markAllPresent');
+  const markAllAbsent = document.getElementById('markAllAbsent');
+  if (markAllPresent) {
+    markAllPresent.addEventListener('click', () => {
+      document.querySelectorAll('input[value="present"]').forEach(r => {
+        r.checked = true;
+        r.dispatchEvent(new Event('change'));
+      });
+    });
+    markAllAbsent.addEventListener('click', () => {
+      document.querySelectorAll('input[value="absent"]').forEach(r => {
+        r.checked = true;
+        r.dispatchEvent(new Event('change'));
+      });
+    });
+  }
+
+  updateSummary();
+})();
+</script>
+{% endblock %}

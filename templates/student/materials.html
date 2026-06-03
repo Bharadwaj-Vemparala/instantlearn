@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Learning Materials — Instant Learn{% endblock %}
+{% block page_title %}Resource Vault{% endblock %}
+
+{% block content %}
+{% if materials_by_course %}
+  {% for item in materials_by_course %}
+  <div class="section-card mb-4">
+    <div class="section-header mb-3">
+      <h5 class="section-title">
+        <span class="course-color-dot" style="background: {{ item.course.cover_color }};"></span>
+        {{ item.course.title }}
+      </h5>
+      <span class="text-muted small">{{ item.materials|length }} resource{{ item.materials|length|pluralize }}</span>
+    </div>
+    <div class="materials-list">
+      {% regroup item.materials by module_tag as material_groups %}
+      {% for group in material_groups %}
+      <div class="material-group">
+        <div class="material-group-tag">{{ group.grouper }}</div>
+        {% for mat in group.list %}
+        <div class="material-item">
+          <div class="material-icon">
+            {% if mat.is_file %}<i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+            {% else %}<i class="bi bi-link-45deg text-primary"></i>{% endif %}
+          </div>
+          <div class="material-body">
+            <div class="material-name">{{ mat.title }}</div>
+            {% if mat.description %}<div class="material-desc text-muted small">{{ mat.description }}</div>{% endif %}
+            <div class="material-meta text-muted small">
+              <i class="bi bi-clock me-1"></i>{{ mat.uploaded_at|date:"M d, Y" }}
+            </div>
+          </div>
+          <div class="material-actions">
+            {% if mat.is_file %}
+            <a href="{{ mat.file.url }}" class="btn btn-sm btn-primary-custom" download>
+              <i class="bi bi-download me-1"></i>Download
+            </a>
+            {% else %}
+            <a href="{{ mat.external_link }}" class="btn btn-sm btn-outline-primary" target="_blank">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Open Link
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="empty-state large mt-5">
+  <i class="bi bi-folder2-open"></i>
+  <h5>No materials available yet</h5>
+  <p class="text-muted">Your teachers haven't uploaded any resources yet. Check back later!</p>
+  <a href="{% url 'student_dashboard' %}" class="btn btn-primary-custom mt-2">Back to Dashboard</a>
+</div>
+{% endif %}
+{% endblock %}

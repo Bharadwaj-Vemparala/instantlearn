@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Enroll in a Course — Instant Learn{% endblock %}
+{% block page_title %}Enroll in Course{% endblock %}
+
+{% block content %}
+<div class="form-page-layout">
+  <div class="form-card text-center">
+    <div class="enroll-icon-wrap mb-3">
+      <i class="bi bi-mortarboard-fill"></i>
+    </div>
+    <h4 class="fw-bold mb-1">Join a Course</h4>
+    <p class="text-muted mb-4">Enter the 8-character invite code provided by your teacher</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-4">
+        {{ form.invite_code }}
+        {% if form.invite_code.errors %}
+        <div class="form-text text-danger mt-2">{{ form.invite_code.errors|first }}</div>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary-custom btn-lg px-5">
+        <i class="bi bi-arrow-right-circle-fill me-2"></i>Enroll Now
+      </button>
+    </form>
+
+    <p class="text-muted small mt-4">Don't have a code? Ask your teacher to share it with you.</p>
+  </div>
+</div>
+{% endblock %}

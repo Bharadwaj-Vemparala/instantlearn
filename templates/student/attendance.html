@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}My Attendance — Instant Learn{% endblock %}
+{% block page_title %}Attendance Analytics{% endblock %}
+
+{% block content %}
+{% if attendance_by_course %}
+<div class="row g-4">
+  {% for item in attendance_by_course %}
+  <div class="col-md-6 col-lg-4">
+    <div class="section-card attendance-analytics-card">
+      <!-- Ring gauge -->
+      <div class="attendance-ring-wrap">
+        <svg class="perf-ring attendance-ring" viewBox="0 0 36 36">
+          <path class="perf-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="perf-ring-fill {% if item.percentage >= 75 %}fill-good{% elif item.percentage >= 50 %}fill-ok{% else %}fill-low{% endif %}"
+                stroke-dasharray="{{ item.percentage }}, 100"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="attendance-ring-label">
+          <div class="attendance-pct">{{ item.percentage }}%</div>
+          <div class="attendance-label-text">Attendance</div>
+        </div>
+      </div>
+
+      <h6 class="fw-bold text-center mt-3 mb-1">{{ item.course.title }}</h6>
+      <p class="text-muted small text-center mb-3">
+        {{ item.course.teacher.get_full_name|default:item.course.teacher.username }}
+      </p>
+
+      <!-- Health indicator -->
+      <div class="attendance-health-bar mb-3">
+        <div class="health-fill {% if item.percentage >= 75 %}health-good{% elif item.percentage >= 50 %}health-ok{% else %}health-low{% endif %}"
+             style="width: {{ item.percentage }}%"></div>
+      </div>
+
+      {% if item.percentage < 75 %}
+      <div class="alert alert-warning py-2 small text-center mb-2">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        Below 75% — at risk
+      </div>
+      {% elif item.percentage >= 90 %}
+      <div class="alert alert-success py-2 small text-center mb-2">
+        <i class="bi bi-trophy me-1"></i>
+        Excellent attendance!
+      </div>
+      {% endif %}
+
+      <!-- Stats row -->
+      <div class="att-stats-row">
+        <div class="att-stat">
+          <div class="att-stat-val text-success">{{ item.present }}</div>
+          <div class="att-stat-label">Present</div>
+        </div>
+        <div class="att-stat">
+          <div class="att-stat-val text-danger">{{ item.absent }}</div>
+          <div class="att-stat-label">Absent</div>
+        </div>
+        <div class="att-stat">
+          <div class="att-stat-val">{{ item.total }}</div>
+          <div class="att-stat-label">Total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state large mt-5">
+  <i class="bi bi-calendar3-range"></i>
+  <h5>No attendance records yet</h5>
+  <p class="text-muted">Your attendance will appear here once your teacher starts marking it</p>
+  <a href="{% url 'student_dashboard' %}" class="btn btn-primary-custom mt-2">Back to Dashboard</a>
+</div>
+{% endif %}
+{% endblock %}

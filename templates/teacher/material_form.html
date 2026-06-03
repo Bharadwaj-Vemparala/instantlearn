@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Upload Resource — Instant Learn{% endblock %}
+{% block page_title %}Upload Resource{% endblock %}
+
+{% block content %}
+<div class="form-page-layout">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-card-icon" style="background: var(--color-emerald);">
+        <i class="bi bi-folder-plus"></i>
+      </div>
+      <div>
+        <h4 class="mb-0">Upload Learning Resource</h4>
+        <p class="text-muted small mb-0">Course: <strong>{{ course.title }}</strong></p>
+      </div>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="mt-4">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Resource Title <span class="text-danger">*</span></label>
+        {{ form.title }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Module / Tag</label>
+        {{ form.module_tag }}
+        <div class="form-text">e.g., Week 1, Lecture 3, Module A</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Description</label>
+        {{ form.description }}
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Upload File</label>
+          {{ form.file }}
+          <div class="form-text">PDFs, docs, slides, images</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Or External Link</label>
+          {{ form.external_link }}
+          <div class="form-text">YouTube, Google Drive, etc.</div>
+        </div>
+      </div>
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2">{{ form.non_field_errors|first }}</div>
+      {% endif %}
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary-custom">
+          <i class="bi bi-upload me-2"></i>Upload Resource
+        </button>
+        <a href="{% url 'teacher_course_detail' course.pk %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

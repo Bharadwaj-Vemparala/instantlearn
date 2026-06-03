@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Submissions — {{ assignment.title }}{% endblock %}
+{% block page_title %}Submissions{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="section-card mb-4">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+      <h4 class="fw-bold mb-1">{{ assignment.title }}</h4>
+      <p class="text-muted mb-1">
+        <i class="bi bi-collection me-1"></i>{{ assignment.course.title }}
+        &nbsp;&bull;&nbsp;
+        <i class="bi bi-clock me-1"></i>Deadline: {{ assignment.deadline|date:"M d, Y H:i" }}
+        &nbsp;&bull;&nbsp;
+        <i class="bi bi-star me-1"></i>{{ assignment.max_marks }} marks
+      </p>
+      <div class="d-flex gap-3 mt-2">
+        <span class="stat-chip bg-blue-subtle text-blue">
+          <i class="bi bi-send-check me-1"></i>{{ submissions|length }} submitted
+        </span>
+        <span class="stat-chip bg-warning-subtle text-warning">
+          <i class="bi bi-hourglass me-1"></i>{{ not_submitted|length }} pending
+        </span>
+        {% if avg_marks %}
+        <span class="stat-chip bg-success-subtle text-success">
+          <i class="bi bi-graph-up me-1"></i>Avg: {{ avg_marks }}/{{ assignment.max_marks }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{% url 'teacher_course_detail' assignment.course.pk %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back to Course
+    </a>
+  </div>
+</div>
+
+<!-- Submissions Table -->
+{% if submissions %}
+<div class="section-card">
+  <h5 class="section-title mb-3"><i class="bi bi-inbox-fill me-2"></i>Submitted Work</h5>
+  <div class="table-card">
+    <table class="il-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Submitted</th>
+          <th>Content</th>
+          <th>Marks</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in submissions %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="mini-avatar">{{ sub.student.first_name|first|upper }}{{ sub.student.last_name|first|upper }}</div>
+              <div>
+                <div class="fw-semibold">{{ sub.student.get_full_name|default:sub.student.username }}</div>
+                <div class="text-muted small">{{ sub.student.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>{{ sub.submitted_at|date:"M d" }}</div>
+            <div class="text-muted small">{{ sub.submitted_at|date:"H:i" }}</div>
+          </td>
+          <td>
+            {% if sub.file_upload %}
+              <a href="{{ sub.file_upload.url }}" class="badge bg-blue-subtle text-blue text-decoration-none" download>
+                <i class="bi bi-paperclip me-1"></i>File
+              </a>
+            {% endif %}
+            {% if sub.text_content %}
+              <span class="badge bg-secondary-subtle text-secondary">
+                <i class="bi bi-text-left me-1"></i>Text
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            {% if sub.graded_marks is not None %}
+              <span class="fw-bold">{{ sub.graded_marks }}/{{ assignment.max_marks }}</span>
+              <div class="progress mt-1" style="height:4px;width:60px;">
+                <div class="progress-bar bg-success" style="width:{{ sub.grade_percentage }}%"></div>
+              </div>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if sub.status == 'graded' %}
+              <span class="badge bg-success-subtle text-success rounded-pill">Graded</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning rounded-pill">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'grade_submission' sub.pk %}" class="btn btn-xs btn-primary-custom">
+              {% if sub.status == 'graded' %}<i class="bi bi-pencil me-1"></i>Edit{% else %}<i class="bi bi-check2-square me-1"></i>Grade{% endif %}
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Not Submitted -->
+{% if not_submitted %}
+<div class="section-card mt-4">
+  <h5 class="section-title mb-3 text-muted"><i class="bi bi-exclamation-circle me-2"></i>Not Submitted Yet</h5>
+  <div class="students-grid">
+    {% for student in not_submitted %}
+    <div class="student-card opacity-60">
+      <div class="student-avatar">{{ student.first_name|first|upper }}{{ student.last_name|first|upper }}</div>
+      <div class="student-info">
+        <div class="student-name">{{ student.get_full_name|default:student.username }}</div>
+        <div class="text-muted small">Not submitted</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

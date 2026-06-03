@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard — Instant Learn{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'enroll_course' %}" class="btn btn-sm btn-primary-custom">
+  <i class="bi bi-plus-lg me-1"></i>Enroll
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Greeting -->
+<div class="greeting-row mb-4">
+  <div>
+    <h4 class="greeting-title">Hey {{ user.first_name|default:user.username }}! 👋</h4>
+    <p class="greeting-sub text-muted small mb-0">Ready to learn something new today?</p>
+  </div>
+</div>
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ enrolled_courses|length }}</div>
+      <div class="stat-label">Courses Enrolled</div>
+    </div>
+  </div>
+  <div class="stat-card stat-violet">
+    <div class="stat-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ total_assignments }}</div>
+      <div class="stat-label">Total Assignments</div>
+    </div>
+  </div>
+  <div class="stat-card stat-emerald">
+    <div class="stat-icon"><i class="bi bi-send-check-fill"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ submitted_count }}</div>
+      <div class="stat-label">Submitted</div>
+    </div>
+  </div>
+  <div class="stat-card stat-amber">
+    <div class="stat-icon"><i class="bi bi-award-fill"></i></div>
+    <div class="stat-body">
+      <div class="stat-value">{{ recent_grades|length }}</div>
+      <div class="stat-label">Recent Grades</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-1">
+  <!-- Courses -->
+  <div class="col-lg-8">
+    <div class="section-card">
+      <div class="section-header">
+        <h5 class="section-title"><i class="bi bi-collection me-2"></i>My Courses</h5>
+        <a href="{% url 'enroll_course' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+          <i class="bi bi-plus"></i> Enroll
+        </a>
+      </div>
+      {% if enrolled_courses %}
+      <div class="course-grid">
+        {% for course in enrolled_courses %}
+        <a href="{% url 'student_course_detail' course.pk %}" class="course-card" style="--course-color: {{ course.cover_color }};">
+          <div class="course-card-header">
+            <div class="course-initial">{{ course.title|first|upper }}</div>
+          </div>
+          <div class="course-card-body">
+            <h6 class="course-title-text">{{ course.title }}</h6>
+            <p class="course-desc">{{ course.description|truncatewords:10 }}</p>
+            <div class="course-stats">
+              <span><i class="bi bi-person-badge me-1"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+              <span><i class="bi bi-file-text me-1"></i>{{ course.assignment_count }}</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-mortarboard"></i>
+        <h6>You're not enrolled in any courses</h6>
+        <p>Ask your teacher for an invite code</p>
+        <a href="{% url 'enroll_course' %}" class="btn btn-primary-custom btn-sm">Enroll Now</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming Assignments -->
+    {% if upcoming_assignments %}
+    <div class="section-card mt-4">
+      <h5 class="section-title mb-3"><i class="bi bi-clock-history me-2"></i>Upcoming Deadlines</h5>
+      <div class="assignment-list">
+        {% for a in upcoming_assignments %}
+        <div class="assignment-item">
+          <div class="assignment-urgency {% if a.deadline|timeuntil == '0\xa0minutes' %}urgent{% endif %}"></div>
+          <div class="assignment-body flex-grow-1">
+            <div class="fw-semibold">{{ a.title }}</div>
+            <div class="text-muted small">{{ a.course.title }}</div>
+          </div>
+          <div class="assignment-deadline text-end">
+            <div class="small fw-semibold">{{ a.deadline|date:"M d" }}</div>
+            <div class="x-small text-muted">{{ a.deadline|date:"H:i" }}</div>
+          </div>
+          <a href="{% url 'submit_assignment' a.pk %}" class="btn btn-xs btn-primary-custom ms-2">Submit</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Grades -->
+  <div class="col-lg-4">
+    <div class="section-card h-100">
+      <div class="section-header">
+        <h5 class="section-title"><i class="bi bi-award me-2"></i>Recent Grades</h5>
+        <a href="{% url 'student_grades' %}" class="text-decoration-none small">View all →</a>
+      </div>
+      {% if recent_grades %}
+      <div class="grades-feed">
+        {% for sub in recent_grades %}
+        <div class="grade-item">
+          <div class="grade-course-dot" style="background: {{ sub.assignment.course.cover_color }};"></div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold small">{{ sub.assignment.title|truncatechars:28 }}</div>
+            <div class="text-muted x-small">{{ sub.assignment.course.title }}</div>
+          </div>
+          <div class="grade-badge {% if sub.grade_percentage >= 60 %}grade-good{% elif sub.grade_percentage >= 40 %}grade-ok{% else %}grade-low{% endif %}">
+            {{ sub.graded_marks }}/{{ sub.assignment.max_marks }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state small">
+        <i class="bi bi-award"></i>
+        <p>No grades yet</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

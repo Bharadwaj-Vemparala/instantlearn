@@ -1,0 +1,59 @@
+══════════════════════════════════════════════
+  INSTANT LEARN — Quick Start Guide
+══════════════════════════════════════════════
+
+1. INSTALL DEPENDENCIES
+   pip install -r requirements.txt
+
+2. RUN MIGRATIONS
+   python manage.py migrate
+
+3. CREATE SUPERUSER (for admin panel)
+   python manage.py createsuperuser
+
+4. START THE SERVER
+   python manage.py runserver
+
+5. OPEN IN BROWSER
+   App:    http://127.0.0.1:8000/
+   Admin:  http://127.0.0.1:8000/admin/
+
+══════════════════════════════════════════════
+  USER ROLES
+══════════════════════════════════════════════
+
+  TEACHER  — Create courses → get invite code
+           → Post assignments → Grade submissions
+           → Take attendance → Upload materials
+           → Go Live (mock WebRTC classroom)
+
+  STUDENT  — Register → Enter invite code
+           → Submit assignments → View grades
+           → Check attendance analytics
+           → Download materials → Join Live
+
+══════════════════════════════════════════════
+  PROJECT STRUCTURE
+══════════════════════════════════════════════
+
+  instantlearn/        ← Django project config
+    settings.py
+    urls.py
+  core/                ← Main application
+    models.py          ← All data models
+    views.py           ← All views + decorators
+    forms.py           ← All forms
+    urls.py            ← URL routes
+    admin.py           ← Admin registrations
+    migrations/
+  templates/
+    base.html          ← Global layout + sidebar
+    auth/              ← Login / Register
+    teacher/           ← Teacher dashboard, course, grading, attendance, live
+    student/           ← Student dashboard, grades, attendance, materials, live
+  static/
+    css/custom.css     ← Premium design system
+    js/dashboard.js    ← Tab switching, animations
+  manage.py
+  requirements.txt
+══════════════════════════════════════════════
