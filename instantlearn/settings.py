@@ -22,10 +22,8 @@ ALLOWED_HOSTS = os.environ.get(
     'localhost,127.0.0.1'
 ).split(',')
 
-# Allow all Railway domains automatically
-RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL', '')
-if RAILWAY_STATIC_URL:
-    ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
+# Auto-allow all *.up.railway.app domains
+ALLOWED_HOSTS += ['.up.railway.app', '.railway.app']
 
 # ─── Apps ─────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -110,8 +108,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise compressed static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise compressed static files (no manifest — avoids 500 if collectstatic missed)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # ─── Media Files (uploads) ────────────────────────────────────────────────────
 MEDIA_URL = '/media/'
